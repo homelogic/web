@@ -1,0 +1,65 @@
+label { font-weight: bold; 
+		float: left; 
+		width 27%;
+		margin-right: .5em; 
+		text-align: right; 
+} 
+		
+fieldset { border: 2px solid #000000 }
+
+legend { font-weight: bold; 
+		 font-size: 1.5em; 
+		 margin-bottom: .5em;  
+}
+		 
+#login { margin-left: auto; 
+		 margin-right: auto; 
+		 width: 350px; 
+		 padding: 1em 0; 
+}
+#register { margin-left: auto; 
+		 margin-right: auto; 
+		 width: 350px; 
+		 padding: 1em 0; 
+}
+#field { margin-bottom: 5px;}
+	
+.errors { font-weight: bold; 
+	      font-style: italic; 
+	      font-size: 90%; 
+	      color: red; 
+	      margin-top: 0;
+}
+img.logo {
+	display: block;
+    margin-left:  auto;
+    margin-right: auto;
+}
+
+table.devices {
+	border-width: 2px;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: black;
+	border-collapse: collapse;
+	background-color: white;
+    margin-bottom: 30;
+    margin-left:auto;
+    margin-right: auto;
+}
+table.devices th {
+	border-width: 2px;
+    padding: 4px;
+	border-style: solid;
+	border-color: black;
+	background-color: white;
+	text-align: center;
+}
+table.devices td {
+	border-width: 2px;
+    padding: 4px;
+	border-style: solid;
+	border-color: black;
+	background-color: white;
+	text-align: center;
+}
