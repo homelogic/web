@@ -1,5 +1,6 @@
 <?php
 
+
 session_start(); //start the session
 
 require("config.php"); //require the file containing the MySQL database information
