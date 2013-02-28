@@ -1,6 +1,5 @@
 <?php
 
-
 session_start(); //start the session
 
 require("config.php"); //require the file containing the MySQL database information
@@ -87,13 +86,15 @@ switch (@$_POST['Button'])
 	$salt = createSalt();
 	$hash = hash('sha256', $salt . $hash);
 
-	$cxn = mysqli_connect("$host", "$user", "$password", "$database") or die ("Query died: connect");
+	$cxn = mysqli_connect("$host", "$user", "$password", "$database") 
+		or die ("Query died: connect");
 	
 	$reg_email = mysqli_real_escape_string($cxn, $reg_email);
 	$user_fname = mysqli_real_escape_string($cxn, $user_fname);
 	$user_lname = mysqli_real_escape_string($cxn, $user_lname);
 
-	$sql = "INSERT INTO tbl_users (email, password, salt, fname, lname) VALUES ('$reg_email', '$hash', '$salt','$user_fname','$user_lname');";
+	$sql = "INSERT INTO tbl_users (email, password, salt, fname, lname) VALUES 
+		('$reg_email', '$hash', '$salt','$user_fname','$user_lname');";
 	mysqli_query($cxn,$sql) or die("Couldn't execute query");
 	
 	$message_1="You have been successfully registered! Please Login.";

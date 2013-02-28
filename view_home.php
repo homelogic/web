@@ -1,7 +1,9 @@
 <?php
+$url=$_SERVER['REQUEST_URI'];
+header("Refresh: 30; URL=$url"); 
 
 session_start();//start the session
-
+ini_set('session.gc-maxlifetime', 600);
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 600)) {
     // last request was more than 10 minutes ago
     session_unset();     // unset $_SESSION variable for the run-time 
@@ -16,7 +18,6 @@ if(!(isset($_SESSION['auth']) && $_SESSION['auth']))
 	header("Location: index.php");
 	die();
 }
-
 ?>
 
 <html> <title>View Home</title>
@@ -26,6 +27,7 @@ if(!(isset($_SESSION['auth']) && $_SESSION['auth']))
 <img src="images/HomeLogicLogo.jpg" alt="Home Logic Logo" class="logo"/>
 
 <?php
+
 require("config.php"); //require file for MySQL database info
 
 // Connect to MySQL database
@@ -41,10 +43,7 @@ $result=mysqli_query($cxn,$get_table) or die("Couldn't execute this query");
 //create table and its headers
 echo '<center><table border="1" cellpadding="4" class="devices">'; 
 echo '<tr><th>Device Name</th><th>Type</th><th>Room Name</th><th>Status</th>	
-		<th>Value</th><th>Update Status to: </th><th>Update Value to: </th></tr>';
-
-//begin form for status and value updates and on submit redirect to update_devices.php
-echo '<form name="Update_device" action="update_devices.php" method="post">';
+		<th>Value</th><th>Update Status</th><th>Update Value</th></tr>';
 
 //while loop that runs for each row of the tbl_device table
 while($rows = mysqli_fetch_assoc($result)) 
@@ -70,17 +69,22 @@ while($rows = mysqli_fetch_assoc($result))
 	//if status of device is 1
 	if($rows['status'] == 1)
 	{
-		if($Type == 'Door Lock')//and type is door lock
+		if($Type == 'Door Lock'){//and type is door lock
 			$Status = "Locked"; //then set status variable to locked
-		else //status of device is 1 and type isn't door lock 
+			$change_status="Unlock Door"; }
+		else{ //status of device is 1 and type isn't door lock 
 			$Status = "On";//then set status variable to On
+			$change_status="Turn Off";}
+			
 	}
 	else//status of device is 0
 	{
-		if($Type == 'Door Lock')//and type is door lock
+		if($Type == 'Door Lock'){//and type is door lock
 			$Status = "Unlocked";//set status variable to unlocked
-		else//status of device is 0 and type is not door lock
+			$change_status="Lock Door";}
+		else{//status of device is 0 and type is not door lock
 			$Status = "Off";//set status variable to off
+			$change_status = "Turn On";}
 	}	
 //put information for device into the columns of the current row
 echo
@@ -91,25 +95,34 @@ echo
 //status to locked and unlocked. Otherwise set the options to on and off. The name of the
 //input is determined by the device_id with "status_" in front of it to distinguish it as
 //a status input and what device it corresponds to
-if($Type !='Door Lock'){
-	echo '<td><select name="status_'.$ID.'"><option value='.NULL.'>N/A</option><option value=1>On</option>
-		<option value=0>Off</option></select></td>';}
-else{
-	echo '<td><select name="status_'.$ID.'"><option value='.NULL.'>N/A</option><option value=1>Locked</option>
-		<option value=0>Unlocked</option></select></td>';}
+//begin form for status and value updates and on submit redirect to update_devices.php
+echo '<form name="value_'.$ID.'" action="update_status.php" method="post">';
+echo "<input type='hidden' name='device' value='$ID'>";
+if($change_status=="Turn Off" || $change_status=="Unlock Door")
+{
+	echo '<input type="hidden" name="status" value=0>';
+	echo "<td><input type='submit' value='$change_status'></form></td>";
+}
+else
+{	
+	echo '<input type="hidden" name="status" value=1>';
+	echo "<td><input type='submit' value='$change_status'></form></td>";
+}
+
 //if the value of the device is not 0 then create an input field for the desired value
 //the name of the input is determined by the device_id with "value_" in front of it to 
 //distinguish it as a value input and what device it corresponds to
-if($Value)
-	echo '<td><input type="text" name="value_'.$ID.'"/></td></tr>'; 
+
+if($Value){
+	echo '<form name="value_'.$ID.'" action="update_value.php" method="post">';
+	echo "<input type='hidden' name='device' value='$ID'>";
+	echo '<td><input type="text" name="value" required>';
+	echo '<input type="submit" value="Update"></form></td></tr>'; }
 else
 	echo '<td></td></tr>';
 }
 
 echo'</table></center>';
-//create an "Update Devices" button to submit desired updates
-echo '<center><input type="submit" value="Update Devices"></center> 
-</form>';
 	
 //create form to update actions settings
 echo'<form name="Set_Actions" action="action_settings.php" method="post">';
@@ -145,7 +158,7 @@ while($rows1 = mysqli_fetch_assoc($result2))
 ?>
 <!--create button to set room action settings -->
 
-<center><input type="submit" value="Save Action Settings"></center> 
+<input type="submit" value="Save Action Settings">
 </form>
 
 <!-- create a logout button that redirects to logout.php when pressed -->
