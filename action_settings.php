@@ -28,14 +28,14 @@ $thread_id=mysqli_thread_id($cxn);
 if($_POST['Lhouse_lights'] != NULL)
 {	
 	$lhl=$_POST['Lhouse_lights'];
-	$sql="UPDATE tbl_actions SET UserL_Loff=$lhl WHERE action_id=10000";
+	$sql="UPDATE tbl_actions SET UserL_Loff=$lhl";
 	mysqli_query($cxn,$sql) or die("Couldn't execute this query");
 }
 
 if($_POST['Lhouse_locks'] != NULL)
 {	
 	$lhlock=$_POST['Lhouse_locks'];
-	$sql="UPDATE tbl_actions SET UserL_Lock=$lhlock WHERE action_id=10000";
+	$sql="UPDATE tbl_actions SET UserL_Lock=$lhlock";
 	mysqli_query($cxn,$sql) or die("Couldn't execute this query");
 }
 
