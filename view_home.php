@@ -42,8 +42,8 @@ $result=mysqli_query($cxn,$get_table) or die("Couldn't execute this query");
 
 //create table and its headers
 echo '<center><table border="1" cellpadding="4" class="devices">'; 
-echo '<tr><th>Device Name</th><th>Type</th><th>Room Name</th><th>Status</th>	
-		<th>Value</th><th>Update Status</th><th>Update Value</th></tr>';
+echo '<tr><th>Device Name</th><th>Type</th><th>Room</th><th>Status</th><th>Update Status</th>	
+		<th>Current Temp</th><th>Value/Temp. Settings</th><th>Update Value/Temp. Settings</th></tr>';
 
 //while loop that runs for each row of the tbl_device table
 while($rows = mysqli_fetch_assoc($result)) 
@@ -54,6 +54,7 @@ while($rows = mysqli_fetch_assoc($result))
 	$Type = $rows['device_type']; 
 	$Room_ID = $rows['room']; 
 	$Value = $rows['device_value'];
+	$current_temp = $rows['current_temp'];
 	
 	//query the database to get the row in the tbl_rooms table where the "room_id"
 	//is equal to the room of the current device then set a variable for the room name of
@@ -62,10 +63,7 @@ while($rows = mysqli_fetch_assoc($result))
 	$result1 = mysqli_query($cxn,$get_rm_name) or die("Couldn't execute that query");
 	$room_row = mysqli_fetch_assoc($result1);
 	$Room_Name = $room_row['room_name'];
-	
-	if(!$Value)//set value variable to NULL if value is 0
-		$Value = NULL;
-	
+		
 	//if status of device is 1
 	if($rows['status'] == 1)
 	{
@@ -86,40 +84,38 @@ while($rows = mysqli_fetch_assoc($result))
 			$Status = "Off";//set status variable to off
 			$change_status = "Turn On";}
 	}	
-//put information for device into the columns of the current row
-echo
+	//put information for device into the columns of the current row
+	echo
 	'<tr><td>'.$Device_Name.'</td><td>'.$Type.'</td><td>'.$Room_Name.'</td><td>
-	'.$Status.'</td><td>'.$Value.'</td>';
+	'.$Status.'</td>';
 	
-//if device is a door lock then set the options of the dropdown menu for the desired
-//status to locked and unlocked. Otherwise set the options to on and off. The name of the
-//input is determined by the device_id with "status_" in front of it to distinguish it as
-//a status input and what device it corresponds to
-//begin form for status and value updates and on submit redirect to update_devices.php
-echo '<form name="value_'.$ID.'" action="update_status.php" method="post">';
-echo "<input type='hidden' name='device' value='$ID'>";
-if($change_status=="Turn Off" || $change_status=="Unlock Door")
-{
-	echo '<input type="hidden" name="status" value=0>';
-	echo "<td><input type='submit' value='$change_status'></form></td>";
-}
-else
-{	
-	echo '<input type="hidden" name="status" value=1>';
-	echo "<td><input type='submit' value='$change_status'></form></td>";
-}
-
-//if the value of the device is not 0 then create an input field for the desired value
-//the name of the input is determined by the device_id with "value_" in front of it to 
-//distinguish it as a value input and what device it corresponds to
-
-if($Value){
-	echo '<form name="value_'.$ID.'" action="update_value.php" method="post">';
+	//create form for each device to update the status
+	echo '<form name="status_'.$ID.'" action="update_status.php" method="post">';
 	echo "<input type='hidden' name='device' value='$ID'>";
-	echo '<td><input type="text" name="value" required>';
-	echo '<input type="submit" value="Update"></form></td></tr>'; }
-else
-	echo '<td></td></tr>';
+	if($change_status=="Turn Off" || $change_status=="Unlock Door")
+	{
+		echo '<input type="hidden" name="status" value=0>';
+		echo "<td><input type='submit' value='$change_status'></form></td>";
+	}
+	else
+	{	
+		echo '<input type="hidden" name="status" value=1>';
+		echo "<td><input type='submit' value='$change_status'></form></td>";
+	}
+	
+	if(!$current_temp)//put nothing in table column for current_temp if $current_temp is 0 or NULL
+		echo '<td></td>';
+	else	
+		echo '<td>'.$current_temp.'</td>';
+	
+	if(!$Value)//put nothing in table column for value if $value is 0 or null
+		echo '<td></td><td></td></tr>';
+	else {	
+		echo '<td>'.$Value.'/'.($Value+4).'</td>';
+		echo '<form name="value_'.$ID.'" action="update_value.php" method="post">';
+		echo "<input type='hidden' name='device' value='$ID'>";
+		echo '<td><input type="text" name="value" required>';
+		echo '<input type="submit" value="Update"></form></td></tr>'; }
 }
 
 echo'</table></center>';
@@ -127,14 +123,14 @@ echo'</table></center>';
 //create form to update actions settings
 echo'<form name="Set_Actions" action="action_settings.php" method="post">';
 
-echo '<legend>House Settings</legend>';	
-echo 'When the user leaves the house do you want to turn off all the lights?';
+echo '<center><p><legend>House Settings</legend>';	
+echo 'Turn off all lights when all users leave house?';
 echo '<select name="Lhouse_lights"><option value='.NULL.'>N/A</option><option value=1>Yes</option>
 		<option value=0>No</option></select><br>';	
 		
-echo 'When the user leaves the house do you want to lock all the doors?';
+echo 'Lock all doors when all users leave house?';
 echo '<select name="Lhouse_locks"><option value='.NULL.'>N/A</option><option value=1>Yes</option>
-		<option value=0>No</option></select><br><br>';
+		<option value=0>No</option></select><br></p></center>';
 	
 $sql="SELECT * FROM tbl_rooms";
 $result2=mysqli_query($cxn, $sql) or die("Couldn't execute that query");
@@ -142,29 +138,27 @@ while($rows1 = mysqli_fetch_assoc($result2))
 {
 	$room_id = $rows1['room_id'];
 	$room_name = $rows1['room_name'];
-	echo '<legend>For the '."$room_name".' which of the following actions should be taken?</legend>';
-	echo 'When lights are off and user enters the room, turn on the lights?';
+	echo '<center><p><legend>'."$room_name".' Settings</legend>';
+	echo 'Turn on lights when user enters the room?';
 	echo '<select name="enter_'.$room_id.'"><option value='.NULL.'>N/A</option><option value=1>Yes</option>
 		<option value=0>No</option></select><br>';
-	echo 'When lights are on and user leaves the room, turn off the lights?';
+	echo 'Turn off lights when user leaves the room?';
 	echo '<select name="leave_'.$room_id.'"><option value='.NULL.'>N/A</option><option value=1>Yes</option>
-		<option value=0>No</option></select><br><br>';	
+		<option value=0>No</option></select><br></p></center>';	
 }
 	
-	//kill and close the MySQL connection
-	mysqli_kill($cxn,$thread_id); 
-	mysqli_close($cxn);
+//kill and close the MySQL connection
+mysqli_kill($cxn,$thread_id); 
+mysqli_close($cxn);
 
 ?>
 <!--create button to set room action settings -->
 
-<input type="submit" value="Save Action Settings">
-</form>
+<center><input type="submit" value="Save Action Settings"></center></form>
 
 <!-- create a logout button that redirects to logout.php when pressed -->
 <form name="Logout" action="logout.php" method="post"> 
-<center><input type="submit" value="Logout"></center> 
-</form>
+<center><input type="image" src="images/logout.jpg" alt="Logout Button"></center> </form>
 
 </body> 
 </html>
