@@ -1,7 +1,7 @@
 <?php
 	//set MySQL database parameters
-	$user = "root";
+	$user = "homelogic";
 	$host = "localhost";
-	$password = "";
+	$password = "homelogic";
 	$database = "homelogic";		
 ?>
